@@ -7,8 +7,14 @@ using namespace std;
 
 class Splay {
 
+  struct Node {
+    int data;
+  }
+
   public:
 
+    Splay();
 
+    ~Splay();
 
 };
