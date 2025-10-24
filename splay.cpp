@@ -3,18 +3,30 @@
 //
 
 #include <iostream>
+#include "splay.h"
 using namespace std;
 
-class Splay {
+Splay::Splay() {
 
-  struct Node {
-    int data;
-  }
+  this->root = nullptr;
+  this->empty = true;
 
-  public:
+}
 
-    Splay();
+Splay::Node::Node(string title, string release_year, string ign_rating, string genre, vector<string> platforms, string user_rating) {
 
-    ~Splay();
+  this->title = title;
+  this->release_year = release_year;
+  this->ign_rating = ign_rating;
+  this->genre = genre;
+  this->user_rating = user_rating;
+  this->left = nullptr;
+  this->right = nullptr;
 
-};
+}
+
+
+
+
+
+
