@@ -13,11 +13,12 @@ Splay::Splay() {
 
 }
 
-Splay::Node::Node(string title, double ign_rating, vector<string> genre, string platform, string user_rating) {
+Splay::Node::Node(const string &title, double ign_rating, const vector<string> &genre, const string& platform, const string &user_rating) {
 
   this->title = title;
   this->ign_rating = ign_rating;
   this->genre = genre;
+  this->platform = platform;
   this->user_rating = user_rating;
   this->left = nullptr;
   this->right = nullptr;
@@ -41,7 +42,32 @@ Splay::~Splay() {
 
 }
 
-Splay::Node *Splay::recursiveSplayInsert(Node *root, string title, double ign_rating, vector<string> genre, string platform, string user_rating) {
+void Splay::zig(Node* root) {
+
+  // Zig rotation
+
+  return;
+
+}
+
+void Splay::zag(Node* root) {
+
+  // Zag rotation
+
+  return;
+
+}
+
+void Splay::splay(Node* root) {
+
+  // Zig or Zag?
+
+
+  return;
+
+}
+
+Splay::Node *Splay::recursiveSplayInsert(Node *root, const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string& user_rating) {
 
   // Recursive Insert
 
@@ -63,13 +89,13 @@ Splay::Node *Splay::recursiveSplayInsert(Node *root, string title, double ign_ra
 }
 
 
-void Splay::insertSplay(string title, double ign_rating, vector<string> genre, string platform, string user_rating) {
+void Splay::insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string &user_rating) {
 
   root = recursiveSplayInsert(root, title, ign_rating, genre, platform, user_rating);
 
 }
 
-Splay::Node* Splay::splaySearch(string title) {
+Splay::Node* Splay::splaySearch(const string& title) {
 
   Node* temp = root;
   if (empty == true) {
@@ -87,6 +113,8 @@ Splay::Node* Splay::splaySearch(string title) {
       return temp;
     }
   }
+
+  return nullptr;
 
 }
 
