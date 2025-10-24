@@ -26,7 +26,7 @@ class Splay {
       Node* left;
       Node* right;
 
-      Node(string title, double ign_rating, vector<string> genre, string platform, string user_rating);
+      Node(const string &title, double ign_rating, const vector<string> &genre, const string& platform, const string &user_rating);
 
     };
 
@@ -45,11 +45,17 @@ class Splay {
 
     ~Splay();
 
-    Node* recursiveSplayInsert(Node* root, string title, double ign_rating, vector<string> genre, string platform, string user_rating);
+    void zig(Node* root);
 
-    void insertSplay(string title, double ign_rating, vector<string> genre, string platform, string user_rating);
+    void zag(Node* root);
 
-    Node* splaySearch(string title);
+    void splay(Node* root);
+
+    Node* recursiveSplayInsert(Node* root, const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string& user_rating);
+
+    void insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string &user_rating);
+
+    Node* splaySearch(const string& title);
 
     void splayPrintInorderRecursive(Node* root);
 
