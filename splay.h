@@ -16,10 +16,9 @@ class Splay {
       // Game info
 
       string title;
-      string release_year;
-      string ign_rating;
-      string genre;
-      vector<string> platforms;
+      double ign_rating;
+      vector<string> genre;
+      string platform;
       string user_rating;
 
       // Tree info
@@ -27,7 +26,7 @@ class Splay {
       Node* left;
       Node* right;
 
-      Node(string title, string release_year, string ign_rating, string genre, vector<string> platforms, string user_rating);
+      Node(string title, double ign_rating, vector<string> genre, string platform, string user_rating);
 
     };
 
@@ -38,13 +37,23 @@ class Splay {
 
   public:
 
+    // Splay functions
+
     Splay();
 
     void deleteSplay(Node* root);
 
     ~Splay();
 
-  //hello world
+    Node* recursiveSplayInsert(Node* root, string title, double ign_rating, vector<string> genre, string platform, string user_rating);
+
+    void insertSplay(string title, double ign_rating, vector<string> genre, string platform, string user_rating);
+
+    Node* splaySearch(string title);
+
+    void splayPrintInorderRecursive(Node* root);
+
+    void splayPrintInorder();
 
   };
 
