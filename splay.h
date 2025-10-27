@@ -45,21 +45,29 @@ class Splay {
 
     ~Splay();
 
-    void zig(Node* root);
+    Node* rightRotation(Node* root);
 
-    void zag(Node* root);
+    Node* leftRotation(Node* root);
 
-    void splay(Node* root);
+    Node* zig(Node* root);
+
+    Node* zigZig(Node* root);
+
+    Node* zigZag(Node* root);
+
+    Node* splay(Node* root, const string& title);
 
     Node* recursiveSplayInsert(Node* root, const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string& user_rating);
 
     void insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string &user_rating);
 
+    Node* splayRecursiveSearch(Node* root, Node* &found, const string& title);
+
     Node* splaySearch(const string& title);
 
-    void splayPrintInorderRecursive(Node* root);
+    void splayPrintPreorderRecursive(Node* root);
 
-    void splayPrintInorder();
+    void splayPrintPreorder();
 
   };
 

@@ -11,8 +11,13 @@ using namespace std;
 int main() {
 
     Splay splay;
-    splay.insertSplay("HollowKnight: Silksong", 10, {"souls-like", "metroidvania"}, "PC", "10");
-    splay.splayPrintInorder();
+    splay.insertSplay("D", 10, {"souls-like", "metroidvania"}, "PC", "10");
+    splay.insertSplay("E", 10, {"souls-like", "metroidvania"}, "PC", "10");
+    splay.insertSplay("A", 10, {"souls-like", "metroidvania"}, "PC", "10");
+    splay.splayPrintPreorder();
+    splay.splaySearch("D");
+    cout << endl << " " << endl;
+    splay.splayPrintPreorder();
 
     return 0;
 }

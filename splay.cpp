@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <string>
 #include "splay.h"
 using namespace std;
 
@@ -42,28 +43,86 @@ Splay::~Splay() {
 
 }
 
-void Splay::zig(Node* root) {
+Splay::Node *Splay::rightRotation(Node *root) {
+
+  Node* grandchild = root->left->right;
+  Node* newParent = root->left;
+  newParent->right = root;
+  root->left = grandchild;
+  return newParent;
+
+}
+
+Splay::Node *Splay::leftRotation(Node *root) {
+
+  Node* grandchild = root->right->left;
+  Node* newParent = root->right;
+  newParent->left = root;
+  root->right = grandchild;
+  return newParent;
+
+}
+
+
+Splay::Node* Splay::zig(Node* root) {
 
   // Zig rotation
 
-  return;
+  return root;
 
 }
 
-void Splay::zag(Node* root) {
+Splay::Node* Splay::zigZig(Node* root) {
 
-  // Zag rotation
+  // ZigZig rotation
 
-  return;
+  return root;
 
 }
 
-void Splay::splay(Node* root) {
+Splay::Node* Splay::zigZag(Node* root) {
+
+  // ZigZag rotation
+
+  return root;
+
+}
+
+Splay::Node* Splay::splay(Node* root, const string& title) {
 
   // Zig or Zag?
 
+  if (root->right == nullptr && root->left == nullptr) {
+    return root;
+  }
+  if (root->right != nullptr) {
+    if (title == root->right->title) {
+      root = leftRotation(root);
+      return root;
+    }
+    if (root->right->left != nullptr) {
+      if (title == root->right->left->title) {
+        root = rightRotation(root);
+        root = leftRotation(root);
+        return root;
+      }
+    }
+  }
+  else if (root->left != nullptr) {
+    if (title == root->left->title) {
+      root = rightRotation(root);
+      return root;
+    }
+    if (root->left->right != nullptr) {
+      if (title == root->left->right->title) {
+        root = leftRotation(root);
+        root = rightRotation(root);
+        return root;
+      }
+    }
+  }
 
-  return;
+  return root;
 
 }
 
@@ -75,16 +134,16 @@ Splay::Node *Splay::recursiveSplayInsert(Node *root, const string& title, double
     empty == false;
     return new Node(title, ign_rating, genre, platform, user_rating);
   }
-  else if (title < root->title) {
-    root->left = recursiveSplayInsert(root, title, ign_rating, genre, platform, user_rating);
+  if (title < root->title) {
+    root->left = recursiveSplayInsert(root->left, title, ign_rating, genre, platform, user_rating);
   }
   else if (title > root->title) {
-    root->right = recursiveSplayInsert(root, title, ign_rating, genre, platform, user_rating);
+    root->right = recursiveSplayInsert(root->right, title, ign_rating, genre, platform, user_rating);
   }
 
-  // Moving inserted node to root through splay operations
+  root = splay(root, title);
 
-  // SPLAY BALANCING CODE HERE
+  return root;
 
 }
 
@@ -95,30 +154,36 @@ void Splay::insertSplay(const string& title, double ign_rating, const vector<str
 
 }
 
-Splay::Node* Splay::splaySearch(const string& title) {
-
-  Node* temp = root;
-  if (empty == true) {
-    return nullptr;
+Splay::Node *Splay::splayRecursiveSearch(Node* root, Node* &found, const string& title) {
+  if (root == nullptr) {
+    return root;
+  }
+  if (title < root->title) {
+    root->left = splayRecursiveSearch(root->left, found, title);
+  }
+  else if (title > root->title) {
+    root->right = splayRecursiveSearch(root->right, found, title);
+  }
+  else if (title == root->title) {
+    found = root;
+    return root;
   }
 
-  while (temp != nullptr) {
-    if (title < temp->title) {
-      temp = temp->left;
-    }
-    else if (title > temp->title) {
-      temp = temp->right;
-    }
-    else if (title == temp->title) {
-      return temp;
-    }
-  }
+  root = splay(root, title);
 
-  return nullptr;
+  return root;
 
 }
 
-void Splay::splayPrintInorderRecursive(Node* root) {
+Splay::Node *Splay::splaySearch(const string& title) {
+
+  Node* found;
+  root = splayRecursiveSearch(root, found, title);
+  return found;
+
+}
+
+void Splay::splayPrintPreorderRecursive(Node* root) {
 
   // For testing
 
@@ -126,15 +191,15 @@ void Splay::splayPrintInorderRecursive(Node* root) {
     return;
   }
   else {
-    splayPrintInorderRecursive(root->left);
     cout << root->title << " ";
-    splayPrintInorderRecursive(root->right);
+    splayPrintPreorderRecursive(root->left);
+    splayPrintPreorderRecursive(root->right);
   }
 
 }
 
-void Splay::splayPrintInorder() {
-  splayPrintInorderRecursive(root);
+void Splay::splayPrintPreorder() {
+  splayPrintPreorderRecursive(root);
 }
 
 
