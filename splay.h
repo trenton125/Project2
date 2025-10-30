@@ -41,33 +41,27 @@ class Splay {
 
     Splay();
 
-    void deleteSplay(Node* root);
+    void deleteSplay(const Node* root);
 
     ~Splay();
 
-    Node* rightRotation(Node* root);
+    static Node* rightRotation(Node* root);
 
-    Node* leftRotation(Node* root);
+    static Node* leftRotation(Node* root);
 
-    Node* zig(Node* root);
+    static Node* splay(Node* root, const string& title);
 
-    Node* zigZig(Node* root);
-
-    Node* zigZag(Node* root);
-
-    Node* splay(Node* root, const string& title);
-
-    Node* recursiveSplayInsert(Node* root, const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string& user_rating);
+    static Node* recursiveSplayInsert(Node* root, const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string& user_rating);
 
     void insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string &user_rating);
 
-    Node* splayRecursiveSearch(Node* root, Node* &found, const string& title);
+    static Node* splayRecursiveSearch(Node* root, Node* &found, const string& title);
 
     Node* splaySearch(const string& title);
 
-    void splayPrintPreorderRecursive(Node* root);
+    static void splayPrintPreorderRecursive(const Node* root);
 
-    void splayPrintPreorder();
+    void splayPrintPreorder() const;
 
   };
 

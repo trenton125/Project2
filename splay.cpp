@@ -26,7 +26,7 @@ Splay::Node::Node(const string &title, double ign_rating, const vector<string> &
 
 }
 
-void Splay::deleteSplay(Node* root) {
+void Splay::deleteSplay(const Node* root) {
 
   if (empty == false) {
     if (root != nullptr) {
@@ -35,6 +35,7 @@ void Splay::deleteSplay(Node* root) {
       delete root;
     }
   }
+
 }
 
 Splay::~Splay() {
@@ -60,31 +61,6 @@ Splay::Node *Splay::leftRotation(Node *root) {
   newParent->left = root;
   root->right = grandchild;
   return newParent;
-
-}
-
-
-Splay::Node* Splay::zig(Node* root) {
-
-  // Zig rotation
-
-  return root;
-
-}
-
-Splay::Node* Splay::zigZig(Node* root) {
-
-  // ZigZig rotation
-
-  return root;
-
-}
-
-Splay::Node* Splay::zigZag(Node* root) {
-
-  // ZigZag rotation
-
-  return root;
 
 }
 
@@ -131,7 +107,6 @@ Splay::Node *Splay::recursiveSplayInsert(Node *root, const string& title, double
   // Recursive Insert
 
   if (root == nullptr) {
-    empty == false;
     return new Node(title, ign_rating, genre, platform, user_rating);
   }
   if (title < root->title) {
@@ -158,7 +133,7 @@ Splay::Node *Splay::splayRecursiveSearch(Node* root, Node* &found, const string&
   if (root == nullptr) {
     return root;
   }
-  if (title < root->title) {
+  if (stoi(title) < stoi(root->title)) {
     root->left = splayRecursiveSearch(root->left, found, title);
   }
   else if (title > root->title) {
@@ -168,10 +143,15 @@ Splay::Node *Splay::splayRecursiveSearch(Node* root, Node* &found, const string&
     found = root;
     return root;
   }
+  else {
+    found = nullptr;
+    return root;
+  }
 
-  root = splay(root, title);
-
-  return root;
+  if (found != nullptr) {
+    root = splay(root, title);
+    return root;
+  }
 
 }
 
@@ -183,7 +163,7 @@ Splay::Node *Splay::splaySearch(const string& title) {
 
 }
 
-void Splay::splayPrintPreorderRecursive(Node* root) {
+void Splay::splayPrintPreorderRecursive(const Node* root) {
 
   // For testing
 
@@ -198,7 +178,7 @@ void Splay::splayPrintPreorderRecursive(Node* root) {
 
 }
 
-void Splay::splayPrintPreorder() {
+void Splay::splayPrintPreorder() const {
   splayPrintPreorderRecursive(root);
 }
 
