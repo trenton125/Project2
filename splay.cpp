@@ -14,13 +14,13 @@ Splay::Splay() {
 
 }
 
-Splay::Node::Node(const string &title, double ign_rating, const vector<string> &genre, const string& platform, const string &user_rating) {
+Splay::Node::Node(const string &title, double ign_rating, const vector<string> &genre, const string& platform) {
 
   this->title = title;
   this->ign_rating = ign_rating;
   this->genre = genre;
   this->platform = platform;
-  this->user_rating = user_rating;
+  this->user_rating = "-1";
   this->left = nullptr;
   this->right = nullptr;
 
@@ -102,18 +102,18 @@ Splay::Node* Splay::splay(Node* root, const string& title) {
 
 }
 
-Splay::Node *Splay::recursiveSplayInsert(Node *root, const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string& user_rating) {
+Splay::Node *Splay::recursiveSplayInsert(Node *root, const string& title, double ign_rating, const vector<string>& genre, const string& platform) {
 
   // Recursive Insert
 
   if (root == nullptr) {
-    return new Node(title, ign_rating, genre, platform, user_rating);
+    return new Node(title, ign_rating, genre, platform);
   }
   if (title < root->title) {
-    root->left = recursiveSplayInsert(root->left, title, ign_rating, genre, platform, user_rating);
+    root->left = recursiveSplayInsert(root->left, title, ign_rating, genre, platform);
   }
   else if (title > root->title) {
-    root->right = recursiveSplayInsert(root->right, title, ign_rating, genre, platform, user_rating);
+    root->right = recursiveSplayInsert(root->right, title, ign_rating, genre, platform);
   }
 
   root = splay(root, title);
@@ -123,9 +123,9 @@ Splay::Node *Splay::recursiveSplayInsert(Node *root, const string& title, double
 }
 
 
-void Splay::insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform, const string &user_rating) {
+void Splay::insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform) {
 
-  root = recursiveSplayInsert(root, title, ign_rating, genre, platform, user_rating);
+  root = recursiveSplayInsert(root, title, ign_rating, genre, platform);
 
 }
 
