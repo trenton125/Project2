@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_executable(Project2
     heap.h
-    heapDataStructure.cpp
+    heap.cpp
     main.cpp
     splay.cpp
     splay.h

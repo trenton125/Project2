@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
 #include "splay.h"
 using namespace std;
 
@@ -133,7 +134,7 @@ Splay::Node *Splay::splayRecursiveSearch(Node* root, Node* &found, const string&
   if (root == nullptr) {
     return root;
   }
-  if (stoi(title) < stoi(root->title)) {
+  if (title < root->title) {
     root->left = splayRecursiveSearch(root->left, found, title);
   }
   else if (title > root->title) {
@@ -153,12 +154,18 @@ Splay::Node *Splay::splayRecursiveSearch(Node* root, Node* &found, const string&
     return root;
   }
 
+  return root;
+
 }
 
 Splay::Node *Splay::splaySearch(const string& title) {
 
   Node* found;
+  auto start = chrono::high_resolution_clock::now();
   root = splayRecursiveSearch(root, found, title);
+  auto end = chrono::high_resolution_clock::now();
+  chrono::duration<double> elapsed_time = end - start;
+  splayPrintNode(found, elapsed_time);
   return found;
 
 }
@@ -180,6 +187,22 @@ void Splay::splayPrintPreorderRecursive(const Node* root) {
 
 void Splay::splayPrintPreorder() const {
   splayPrintPreorderRecursive(root);
+}
+
+void Splay::splayPrintNode(Node* node, chrono::duration<double> elapsed_time) {
+  if (node == nullptr) {
+    cout << "Game not Found!" << endl;
+    return;
+  }
+  cout << node->title << endl;
+  cout << node->ign_rating << endl;
+  for (const auto & i : node->genre) {
+    cout << i << " ";
+  }
+  cout << endl;
+  cout << node->platform << endl;
+  cout << endl;
+  cout << "Search Time: " << elapsed_time.count() << " " << "seconds" << endl;
 }
 
 
