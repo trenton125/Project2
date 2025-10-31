@@ -1,0 +1,21 @@
+# Build folders
+cmake-build-debug/
+cmake-build-release/
+build/
+
+# IDE files
+.idea/
+*.iml
+
+# Compiled files
+*.exe
+*.dll
+*.o
+*.obj
+
+# Font files (optional - if you don't want to share)
+files/
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
