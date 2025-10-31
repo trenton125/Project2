@@ -5,6 +5,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <chrono>
 using namespace std;
 
 class Splay {
@@ -62,6 +63,8 @@ class Splay {
     static void splayPrintPreorderRecursive(const Node* root);
 
     void splayPrintPreorder() const;
+
+    static void splayPrintNode(Node* node, chrono::duration<double> elapsed_time);
 
   };
 
