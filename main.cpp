@@ -15,7 +15,7 @@ int main() {
 
     Splay splay_tree;
 
-    ifstream f("games.json");
+    ifstream f("../games.json");
     json data = json::parse(f);
 
     for (auto & it : data["data"]){

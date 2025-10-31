@@ -15,7 +15,7 @@ GameDatabaseWindow::GameDatabaseWindow(int width, int height, Splay& tree)
     searchResult = nullptr;
 
     // Load font
-    if (!font.loadFromFile("files/font.ttf")) {
+    if (!font.loadFromFile("../font.ttf")) {
         std::cerr << "Failed to load font! Place font.ttf in files/ folder" << std::endl;
     }
 
