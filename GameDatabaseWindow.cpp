@@ -2,17 +2,26 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <iomanip>
+#include <sstream>
 
-GameDatabaseWindow::GameDatabaseWindow(int width, int height, Splay& tree)
-    : splayTree(tree)
+GameDatabaseWindow::GameDatabaseWindow(int width, int height, Splay& splay, MaxHeap& heap,
+                                       double splayTime, double heapTime)
+    : splayTree(splay), maxHeap(heap)
 {
-    window.create(sf::VideoMode(width, height), "Game Database - JSON Loaded", sf::Style::Close);
+    window.create(sf::VideoMode(width, height), "Game Database - Heap vs Splay Tree", sf::Style::Close);
     window.clear(sf::Color(40, 44, 52));
 
     currentScreen = MAIN_MENU;
+    currentDataStructure = USING_SPLAY;
     activeField = -1;
     scrollOffset = 0;
-    searchResult = nullptr;
+    splaySearchResult = nullptr;
+    heapSearchResult = nullptr;
+    lastSearchTime = 0.0;
+
+    splayBuildTime = splayTime;
+    heapBuildTime = heapTime;
 
     // Load font
     if (!font.loadFromFile("../font.ttf")) {
@@ -129,33 +138,59 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
     else if (key == sf::Keyboard::Return) {
         if (currentScreen == SEARCH_GAME && !searchInput.empty()) {
             try {
-                searchResult = splayTree.splaySearch(searchInput);
-                if (searchResult) {
-                    statusText.setString("Found: " + searchResult->title);
-                    statusText.setFillColor(sf::Color::Green);
+                if (currentDataStructure == USING_SPLAY) {
+                    splaySearchResult = splayTree.splaySearch(searchInput);
+
+                    // Get the time that was already calculated in splaySearch
+                    lastSearchTime = splayTree.getLastSearchTime();
+
+                    if (splaySearchResult) {
+                        statusText.setString("Found in Splay Tree!");
+                        statusText.setFillColor(sf::Color::Green);
+                    } else {
+                        statusText.setString("Game not found in Splay Tree!");
+                        statusText.setFillColor(sf::Color::Red);
+                        splaySearchResult = nullptr;
+                    }
                 } else {
-                    statusText.setString("Game not found!");
-                    statusText.setFillColor(sf::Color::Red);
-                    searchResult = nullptr;
+                    auto start = std::chrono::high_resolution_clock::now();
+                    heapSearchResult = maxHeap.searchGame(searchInput);
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> elapsed = end - start;
+                    lastSearchTime = elapsed.count();
+
+                    if (heapSearchResult) {
+                        statusText.setString("Found in Max Heap!");
+                        statusText.setFillColor(sf::Color::Green);
+                    } else {
+                        statusText.setString("Game not found in Heap!");
+                        statusText.setFillColor(sf::Color::Red);
+                    }
                 }
             }
             catch (const std::exception& e) {
                 statusText.setString("Search error!");
                 statusText.setFillColor(sf::Color::Red);
-                searchResult = nullptr;
+                splaySearchResult = nullptr;
+                heapSearchResult = nullptr;
                 std::cerr << "Search error: " << e.what() << std::endl;
             }
         }
         else if (currentScreen == ADD_RATING && !ratingInput.empty() && !gameNameForRating.empty()) {
             try {
-                Splay::Node* game = splayTree.splaySearch(gameNameForRating);
-                if (game) {
-                    game->user_rating = ratingInput;
-                    statusText.setString("Rating added successfully!");
-                    statusText.setFillColor(sf::Color::Green);
+                if (currentDataStructure == USING_SPLAY) {
+                    Splay::Node* game = splayTree.splaySearch(gameNameForRating);
+                    if (game) {
+                        game->user_rating = ratingInput;
+                        statusText.setString("Rating added to Splay Tree!");
+                        statusText.setFillColor(sf::Color::Green);
+                    } else {
+                        statusText.setString("Game not found!");
+                        statusText.setFillColor(sf::Color::Red);
+                    }
                 } else {
-                    statusText.setString("Game not found!");
-                    statusText.setFillColor(sf::Color::Red);
+                    statusText.setString("Add rating only works with Splay Tree!");
+                    statusText.setFillColor(sf::Color(255, 165, 0));
                 }
             }
             catch (const std::exception& e) {
@@ -177,15 +212,19 @@ void GameDatabaseWindow::handleScroll(float delta) {
 void GameDatabaseWindow::handleMouseClick(int x, int y) {
     switch (currentScreen) {
         case MAIN_MENU:
-            if (y >= 250 && y <= 300) {
+            // Toggle switch click (moved position)
+            if (x >= 650 && x <= 850 && y >= 160 && y <= 200) {
+                currentDataStructure = (currentDataStructure == USING_SPLAY) ? USING_HEAP : USING_SPLAY;
+            }
+            else if (y >= 300 && y <= 350) {
                 if (x >= 300 && x <= 700) {
                     currentScreen = VIEW_ALL_GAMES;
                 }
             }
-            else if (y >= 320 && y <= 370) {
+            else if (y >= 370 && y <= 420) {
                 if (x >= 300 && x <= 700) currentScreen = SEARCH_GAME;
             }
-            else if (y >= 390 && y <= 440) {
+            else if (y >= 440 && y <= 490) {
                 if (x >= 300 && x <= 700) currentScreen = ADD_RATING;
             }
             break;
@@ -238,66 +277,136 @@ void GameDatabaseWindow::clearInputs() {
     ratingInput.clear();
     gameNameForRating.clear();
     statusText.setString("");
-    searchResult = nullptr;
+    splaySearchResult = nullptr;
+    heapSearchResult = nullptr;
+    lastSearchTime = 0.0;
 }
 
 void GameDatabaseWindow::renderMainMenu() {
     titleText.setString("GAME DATABASE SYSTEM");
-    setText(titleText, window.getSize().x / 2.0f, 100);
+    setText(titleText, window.getSize().x / 2.0f, 80);
     window.draw(titleText);
 
-    subtitleText.setString("Loaded from games.json - Splay Tree Implementation");
-    setText(subtitleText, window.getSize().x / 2.0f, 150);
+    subtitleText.setString("Loaded from games.json - Compare Data Structures");
+    setText(subtitleText, window.getSize().x / 2.0f, 120);
     window.draw(subtitleText);
 
-    // Stats
-    sf::Text statsText;
-    statsText.setFont(font);
-    statsText.setCharacterSize(16);
-    statsText.setFillColor(sf::Color::Yellow);
-    statsText.setString("Games loaded from JSON file");
-    setText(statsText, window.getSize().x / 2.0f, 200);
-    window.draw(statsText);
+    // Draw toggle switch - moved to avoid overlap
+    drawToggleSwitch(650, 160);
+
+    // Build time stats
+    sf::Text timingText;
+    timingText.setFont(font);
+    timingText.setCharacterSize(14);
+    timingText.setFillColor(sf::Color::Yellow);
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(6);
+    oss << "Splay Tree Build Time: " << splayBuildTime << "s";
+    timingText.setString(oss.str());
+    setText(timingText, window.getSize().x / 2.0f, 180);
+    window.draw(timingText);
+
+    oss.str("");
+    oss << "Max Heap Build Time: " << heapBuildTime << "s";
+    timingText.setString(oss.str());
+    setText(timingText, window.getSize().x / 2.0f, 210);
+    window.draw(timingText);
+
+    // Current data structure indicator
+    sf::Text dsText;
+    dsText.setFont(font);
+    dsText.setCharacterSize(18);
+    dsText.setFillColor(sf::Color::White);
+    dsText.setStyle(sf::Text::Bold);
+    std::string dsName = (currentDataStructure == USING_SPLAY) ? "Splay Tree" : "Max Heap";
+    dsText.setString("Currently Using: " + dsName);
+    setText(dsText, window.getSize().x / 2.0f, 240);
+    window.draw(dsText);
 
     // Buttons
-    drawButton("View All Games", 300, 250, 400, 50, sf::Color(33, 150, 243));
-    drawButton("Search Game", 300, 320, 400, 50, sf::Color(255, 152, 0));
-    drawButton("Add User Rating", 300, 390, 400, 50, sf::Color(76, 175, 80));
+    drawButton("View Data Structure Info", 300, 300, 400, 50, sf::Color(33, 150, 243));
+    drawButton("Search Game", 300, 370, 400, 50, sf::Color(255, 152, 0));
+    drawButton("Add User Rating (Splay Only)", 300, 440, 400, 50, sf::Color(76, 175, 80));
 
     // Instructions
     sf::Text infoText;
     infoText.setFont(font);
-    infoText.setCharacterSize(14);
+    infoText.setCharacterSize(12);
     infoText.setFillColor(sf::Color(150, 150, 150));
-    infoText.setString("Data Structure: Self-Balancing Splay Tree");
-    setText(infoText, window.getSize().x / 2.0f, 500);
+    infoText.setString("Toggle switch at top right to switch between data structures");
+    setText(infoText, window.getSize().x / 2.0f, 550);
     window.draw(infoText);
 }
 
 void GameDatabaseWindow::renderViewAllGames() {
-    titleText.setString("ALL GAMES");
-    setText(titleText, window.getSize().x / 2.0f, 80);
-    window.draw(titleText);
+    if (currentDataStructure == USING_SPLAY) {
+        titleText.setString("SPLAY TREE INFO");
+        setText(titleText, window.getSize().x / 2.0f, 80);
+        window.draw(titleText);
 
-    subtitleText.setString("(Splay Tree - Recently accessed games move to root)");
-    setText(subtitleText, window.getSize().x / 2.0f, 130);
-    window.draw(subtitleText);
+        subtitleText.setString("(Self-balancing BST - Recently accessed nodes move to root)");
+        setText(subtitleText, window.getSize().x / 2.0f, 130);
+        window.draw(subtitleText);
 
-    sf::Text infoText;
-    infoText.setFont(font);
-    infoText.setCharacterSize(16);
-    infoText.setFillColor(sf::Color::White);
-    infoText.setString("Use Search to find specific games!");
-    setText(infoText, window.getSize().x / 2.0f, 200);
-    window.draw(infoText);
+        sf::Text infoText;
+        infoText.setFont(font);
+        infoText.setCharacterSize(16);
+        infoText.setFillColor(sf::Color::White);
 
-    sf::Text noteText;
-    noteText.setFont(font);
-    noteText.setCharacterSize(14);
-    noteText.setFillColor(sf::Color(150, 150, 150));
-    noteText.setString("Check console for pre-order traversal of all games");
-    setText(noteText, window.getSize().x / 2.0f, 300);
-    window.draw(noteText);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(6);
+        oss << "Build Time: " << splayBuildTime << " seconds";
+        infoText.setString(oss.str());
+        setText(infoText, window.getSize().x / 2.0f, 200);
+        window.draw(infoText);
+
+        infoText.setString("Search Complexity: O(log n) amortized");
+        setText(infoText, window.getSize().x / 2.0f, 250);
+        window.draw(infoText);
+
+        infoText.setString("Advantages: Fast access to recently searched items");
+        setText(infoText, window.getSize().x / 2.0f, 300);
+        window.draw(infoText);
+    } else {
+        titleText.setString("MAX HEAP INFO");
+        setText(titleText, window.getSize().x / 2.0f, 80);
+        window.draw(titleText);
+
+        subtitleText.setString("(Complete binary tree - Max element at root)");
+        setText(subtitleText, window.getSize().x / 2.0f, 130);
+        window.draw(subtitleText);
+
+        sf::Text infoText;
+        infoText.setFont(font);
+        infoText.setCharacterSize(16);
+        infoText.setFillColor(sf::Color::White);
+
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(6);
+        oss << "Build Time: " << heapBuildTime << " seconds";
+        infoText.setString(oss.str());
+        setText(infoText, window.getSize().x / 2.0f, 200);
+        window.draw(infoText);
+
+        infoText.setString("Search Complexity: O(n) - Linear search required");
+        setText(infoText, window.getSize().x / 2.0f, 250);
+        window.draw(infoText);
+
+        infoText.setString("Advantages: Fast access to max element O(1)");
+        setText(infoText, window.getSize().x / 2.0f, 300);
+        window.draw(infoText);
+
+        if (!maxHeap.empty()) {
+            try {
+                Game maxGame = maxHeap.getMax();
+                infoText.setString("Top Priority Game: " + maxGame.title);
+                infoText.setFillColor(sf::Color::Yellow);
+                setText(infoText, window.getSize().x / 2.0f, 350);
+                window.draw(infoText);
+            } catch (...) {}
+        }
+    }
 
     drawButton("Back to Menu", 350, 600, 300, 50, sf::Color(100, 100, 100));
 }
@@ -307,7 +416,8 @@ void GameDatabaseWindow::renderSearchGame() {
     setText(titleText, window.getSize().x / 2.0f, 80);
     window.draw(titleText);
 
-    subtitleText.setString("(Uses Splay Operation - O(log n) amortized)");
+    std::string dsName = (currentDataStructure == USING_SPLAY) ? "Splay Tree" : "Max Heap";
+    subtitleText.setString("(Using " + dsName + ")");
     setText(subtitleText, window.getSize().x / 2.0f, 130);
     window.draw(subtitleText);
 
@@ -316,13 +426,54 @@ void GameDatabaseWindow::renderSearchGame() {
     drawButton("Search", 350, 270, 300, 50, sf::Color(255, 152, 0));
 
     // Display search result
-    if (searchResult != nullptr) {
+    if (currentDataStructure == USING_SPLAY && splaySearchResult != nullptr) {
         float cardY = 350;
-        drawGameCard(searchResult, 100, cardY, 800);
+        drawGameCard(splaySearchResult, 100, cardY, 800);
+
+        // Display search time
+        sf::Text timeText;
+        timeText.setFont(font);
+        timeText.setCharacterSize(14);
+        timeText.setFillColor(sf::Color::Cyan);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(6);
+        oss << "Search Time: " << lastSearchTime << " seconds";
+        timeText.setString(oss.str());
+        setText(timeText, window.getSize().x / 2.0f, 490);
+        window.draw(timeText);
+    }
+    else if (currentDataStructure == USING_HEAP && heapSearchResult != nullptr) {
+        float cardY = 350;
+        drawGameCardHeap(*heapSearchResult, 100, cardY, 800);
+
+        // Display search time
+        sf::Text timeText;
+        timeText.setFont(font);
+        timeText.setCharacterSize(14);
+        timeText.setFillColor(sf::Color::Cyan);
+        std::ostringstream oss;
+        oss << std::fixed << std::setprecision(6);
+        oss << "Search Time: " << lastSearchTime << " seconds";
+        timeText.setString(oss.str());
+        setText(timeText, window.getSize().x / 2.0f, 490);
+        window.draw(timeText);
     }
     else if (!statusText.getString().isEmpty()) {
         setText(statusText, window.getSize().x / 2.0f, 400);
         window.draw(statusText);
+
+        if (lastSearchTime > 0) {
+            sf::Text timeText;
+            timeText.setFont(font);
+            timeText.setCharacterSize(14);
+            timeText.setFillColor(sf::Color::Cyan);
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(6);
+            oss << "Search Time: " << lastSearchTime << " seconds";
+            timeText.setString(oss.str());
+            setText(timeText, window.getSize().x / 2.0f, 440);
+            window.draw(timeText);
+        }
     }
 
     drawButton("Back to Menu", 350, 600, 300, 50, sf::Color(100, 100, 100));
@@ -333,7 +484,7 @@ void GameDatabaseWindow::renderAddRating() {
     setText(titleText, window.getSize().x / 2.0f, 80);
     window.draw(titleText);
 
-    subtitleText.setString("(Add your personal rating to any game)");
+    subtitleText.setString("(Only works with Splay Tree)");
     setText(subtitleText, window.getSize().x / 2.0f, 130);
     window.draw(subtitleText);
 
@@ -348,6 +499,46 @@ void GameDatabaseWindow::renderAddRating() {
     }
 
     drawButton("Back to Menu", 350, 600, 300, 50, sf::Color(100, 100, 100));
+}
+
+void GameDatabaseWindow::drawToggleSwitch(float x, float y) {
+    // Background
+    sf::RectangleShape switchBg(sf::Vector2f(200, 40));
+    switchBg.setPosition(x, y);
+    switchBg.setFillColor(sf::Color(60, 60, 70));
+    switchBg.setOutlineColor(sf::Color::White);
+    switchBg.setOutlineThickness(2);
+    window.draw(switchBg);
+
+    // Active side highlight
+    sf::RectangleShape activeHighlight(sf::Vector2f(100, 40));
+    if (currentDataStructure == USING_SPLAY) {
+        activeHighlight.setPosition(x, y);
+        activeHighlight.setFillColor(sf::Color(156, 39, 176)); // Purple for Splay
+    } else {
+        activeHighlight.setPosition(x + 100, y);
+        activeHighlight.setFillColor(sf::Color(33, 150, 243)); // Blue for Heap
+    }
+    window.draw(activeHighlight);
+
+    // Labels
+    sf::Text splayLabel;
+    splayLabel.setFont(font);
+    splayLabel.setString("Splay");
+    splayLabel.setCharacterSize(16);
+    splayLabel.setFillColor(sf::Color::White);
+    splayLabel.setStyle(sf::Text::Bold);
+    setText(splayLabel, x + 50, y + 20);
+    window.draw(splayLabel);
+
+    sf::Text heapLabel;
+    heapLabel.setFont(font);
+    heapLabel.setString("Heap");
+    heapLabel.setCharacterSize(16);
+    heapLabel.setFillColor(sf::Color::White);
+    heapLabel.setStyle(sf::Text::Bold);
+    setText(heapLabel, x + 150, y + 20);
+    window.draw(heapLabel);
 }
 
 void GameDatabaseWindow::drawButton(const std::string& text, float x, float y, float width, float height, sf::Color color) {
@@ -402,6 +593,8 @@ void GameDatabaseWindow::drawGameCard(Splay::Node* game, float x, float y, float
     card.setOutlineColor(sf::Color(76, 175, 80));
     card.setOutlineThickness(2);
     window.draw(card);
+
+    // Game title
     sf::Text titleText;
     titleText.setFont(font);
     titleText.setString(game->title);
@@ -443,6 +636,63 @@ void GameDatabaseWindow::drawGameCard(Splay::Node* game, float x, float y, float
     sf::Text genreText;
     genreText.setFont(font);
     genreText.setString("Genres: " + genresToString(game->genre));
+    genreText.setCharacterSize(12);
+    genreText.setFillColor(sf::Color(150, 150, 255));
+    genreText.setPosition(x + 300, y + 60);
+    window.draw(genreText);
+}
+
+void GameDatabaseWindow::drawGameCardHeap(const Game& game, float x, float y, float width) {
+    // Card background
+    sf::RectangleShape card(sf::Vector2f(width, 120));
+    card.setPosition(x, y);
+    card.setFillColor(sf::Color(60, 60, 70));
+    card.setOutlineColor(sf::Color(33, 150, 243)); // Blue for heap
+    card.setOutlineThickness(2);
+    window.draw(card);
+
+    // Game title
+    sf::Text titleText;
+    titleText.setFont(font);
+    titleText.setString(game.title);
+    titleText.setCharacterSize(20);
+    titleText.setFillColor(sf::Color(255, 215, 0)); // Gold
+    titleText.setStyle(sf::Text::Bold);
+    titleText.setPosition(x + 10, y + 10);
+    window.draw(titleText);
+
+    // Platform
+    sf::Text platformText;
+    platformText.setFont(font);
+    platformText.setString("Platform: " + game.platforms);
+    platformText.setCharacterSize(14);
+    platformText.setFillColor(sf::Color::White);
+    platformText.setPosition(x + 10, y + 40);
+    window.draw(platformText);
+
+    // Rating
+    sf::Text ratingText;
+    ratingText.setFont(font);
+    ratingText.setString("IGN Rating: " + std::to_string(game.rating).substr(0, 4));
+    ratingText.setCharacterSize(14);
+    ratingText.setFillColor(sf::Color(100, 255, 100));
+    ratingText.setPosition(x + 10, y + 60);
+    window.draw(ratingText);
+
+    // User rating
+    sf::Text userRatingText;
+    userRatingText.setFont(font);
+    std::string displayRating = (game.userRating == "-1") ? "Not rated yet" : game.userRating;
+    userRatingText.setString("Your Rating: " + displayRating);
+    userRatingText.setCharacterSize(14);
+    userRatingText.setFillColor(sf::Color::Yellow);
+    userRatingText.setPosition(x + 10, y + 80);
+    window.draw(userRatingText);
+
+    // Genres
+    sf::Text genreText;
+    genreText.setFont(font);
+    genreText.setString("Genres: " + genresToString(game.genres));
     genreText.setCharacterSize(12);
     genreText.setFillColor(sf::Color(150, 150, 255));
     genreText.setPosition(x + 300, y + 60);

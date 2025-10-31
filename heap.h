@@ -45,6 +45,7 @@ public:
                     const vector<string> &genres, const string &platforms, const string &userRating);
 
     bool search(const string &title) const;
+    Game* searchGame(const string &title);
     void display() const;
     Game getMax() const;
 

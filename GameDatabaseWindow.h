@@ -2,7 +2,9 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 #include <vector>
+#include <chrono>
 #include "splay.h"
+#include "heap.h"
 #include "json.hpp"
 
 using json = nlohmann::json;
@@ -13,6 +15,18 @@ private:
     sf::Font font;
 
     Splay& splayTree;
+    MaxHeap& maxHeap;
+
+    // Timing data
+    double splayBuildTime;
+    double heapBuildTime;
+    double lastSearchTime;
+
+    enum DataStructure {
+        USING_SPLAY,
+        USING_HEAP
+    };
+    DataStructure currentDataStructure;
 
     enum Screen {
         MAIN_MENU,
@@ -33,7 +47,8 @@ private:
     std::string gameNameForRating;
 
     // Search result
-    Splay::Node* searchResult;
+    Splay::Node* splaySearchResult;
+    Game* heapSearchResult;
 
     // Scroll offset
     float scrollOffset;
@@ -57,11 +72,14 @@ private:
     void drawButton(const std::string& text, float x, float y, float width, float height, sf::Color color);
     void drawInputBox(const std::string& label, const std::string& value, float x, float y, bool active);
     void drawGameCard(Splay::Node* game, float x, float y, float width);
+    void drawGameCardHeap(const Game& game, float x, float y, float width);
+    void drawToggleSwitch(float x, float y);
 
     std::string* getActiveInput();
     std::string genresToString(const std::vector<std::string>& genres);
 
 public:
-    GameDatabaseWindow(int width, int height, Splay& tree);
+    GameDatabaseWindow(int width, int height, Splay& splay, MaxHeap& heap,
+                      double splayTime, double heapTime);
     void run();
 };

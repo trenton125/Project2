@@ -2,8 +2,10 @@
 #include "GameDatabaseWindow.h"
 #include <fstream>
 #include "splay.h"
+#include "heap.h"
 #include "json.hpp"
 #include <string>
+#include <chrono>
 using namespace std;
 using json = nlohmann::json;
 
@@ -14,23 +16,49 @@ int main() {
     int count = 0;
 
     Splay splay_tree;
+    MaxHeap max_heap;
 
+    // Load JSON data
     ifstream f("../games.json");
     json data = json::parse(f);
+
+    auto splay_start = chrono::high_resolution_clock::now();
 
     for (auto & it : data["data"]){
         string game = it.at("game");
         vector<string> genre = it.at("genre");
         string platform = it.at("platform");
         double rating = it.at("rating");
-        count++;
 
         splay_tree.insertSplay(game, rating, genre, platform);
+        count++;
     }
 
-    splay_tree.splaySearch("HollowKnight");
+    auto splay_end = chrono::high_resolution_clock::now();
+    chrono::duration<double> splay_build_time = splay_end - splay_start;
 
-    GameDatabaseWindow window(1000, 700, splay_tree);
+    // Build Max Heap with timing
+    auto heap_start = chrono::high_resolution_clock::now();
+
+    f.clear();
+    f.seekg(0);
+    json data2 = json::parse(f);
+
+    for (auto & it : data2["data"]){
+        string game = it.at("game");
+        vector<string> genre = it.at("genre");
+        string platform = it.at("platform");
+        double rating = it.at("rating");
+
+        max_heap.insertHeap(game, 0, rating, genre, platform, "-1");
+    }
+
+    auto heap_end = chrono::high_resolution_clock::now();
+    chrono::duration<double> heap_build_time = heap_end - heap_start;
+
+    // Launch GUI with both data structures and timing info
+    GameDatabaseWindow window(1000, 750, splay_tree, max_heap,
+                             splay_build_time.count(), heap_build_time.count());
     window.run();
 
     auto end = chrono::system_clock::now();

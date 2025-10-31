@@ -35,6 +35,7 @@ class Splay {
 
     Node* root;
     bool empty;
+    double lastSearchTime;
 
   public:
 
@@ -65,6 +66,8 @@ class Splay {
     void splayPrintPreorder() const;
 
     static void splayPrintNode(Node* node, chrono::duration<double> elapsed_time);
+
+    double getLastSearchTime() const { return lastSearchTime; }
 
   };
 

@@ -12,6 +12,7 @@ Splay::Splay() {
 
   this->root = nullptr;
   this->empty = true;
+  this->lastSearchTime = 0.0;
 
 }
 
@@ -165,6 +166,7 @@ Splay::Node *Splay::splaySearch(const string& title) {
   root = splayRecursiveSearch(root, found, title);
   auto end = chrono::high_resolution_clock::now();
   chrono::duration<double> elapsed_time = end - start;
+  lastSearchTime = elapsed_time.count();
   splayPrintNode(found, elapsed_time);
   return found;
 
@@ -204,8 +206,3 @@ void Splay::splayPrintNode(Node* node, chrono::duration<double> elapsed_time) {
   cout << endl;
   cout << "Search Time: " << elapsed_time.count() << " " << "seconds" << endl;
 }
-
-
-
-
-

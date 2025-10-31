@@ -48,6 +48,14 @@ bool MaxHeap::search(const string &title) const {
     cout << "Game not found.\n";
     return false;
 }
+Game* MaxHeap::searchGame(const string &title) {
+    for (auto &g : heap) {
+        if (g.title == title) {
+            return &g;
+        }
+    }
+    return nullptr;
+}
 
 void MaxHeap::display() const {
     cout << std::left << setw(30) << "Title"
