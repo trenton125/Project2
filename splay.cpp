@@ -133,7 +133,7 @@ Splay::Node *Splay::splayRecursiveSearch(Node* root, Node* &found, const string&
   if (root == nullptr) {
     return root;
   }
-  if (stoi(title) < stoi(root->title)) {
+  if (title < root->title) {
     root->left = splayRecursiveSearch(root->left, found, title);
   }
   else if (title > root->title) {

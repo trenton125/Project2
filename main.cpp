@@ -1,4 +1,5 @@
 #include <iostream>
+#include "GameDatabaseWindow.h"
 #include <fstream>
 #include "splay.h"
 #include "json.hpp"
@@ -10,7 +11,7 @@ int main() {
 
     Splay splay_tree;
 
-    ifstream f("../games.json");
+    ifstream f("games.json");
     json data = json::parse(f);
 
     for (auto & it : data["data"]){
@@ -24,6 +25,8 @@ int main() {
 
     splay_tree.splayPrintPreorder();
 
+    GameDatabaseWindow window(1000, 700, splay_tree);
+    window.run();
 
     return 0;
 }
