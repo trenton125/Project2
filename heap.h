@@ -29,7 +29,7 @@ struct Game {
 
 class MaxHeap {
 private:
-    vector<Game> heap;
+    vector<Game*> heap;
 
     int parentIndex(int i) const { return (i - 1) / 2; }
     int leftChild(int i) const { return 2 * i + 1; }
@@ -39,7 +39,10 @@ private:
     void heapifyDown(int i);
 
 public:
+
     MaxHeap() {}
+
+    ~MaxHeap();
 
     void insertHeap(const string &title, int year, double rating,
                     const vector<string> &genres, const string &platforms, const string &userRating);
@@ -47,7 +50,7 @@ public:
     bool search(const string &title) const;
     Game* searchGame(const string &title);
     void display() const;
-    Game getMax() const;
+    Game* getMax() const;
 
     int size() const { return heap.size(); }
     bool empty() const { return heap.empty(); }
