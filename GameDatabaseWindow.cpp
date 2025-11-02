@@ -399,8 +399,7 @@ void GameDatabaseWindow::renderViewAllGames() {
 
         if (!maxHeap.empty()) {
             try {
-                Game maxGame = maxHeap.getMax();
-                infoText.setString("Top Priority Game: " + maxGame.title);
+                infoText.setString("Heap has " + std::to_string(maxHeap.size()) + " games");
                 infoText.setFillColor(sf::Color::Yellow);
                 setText(infoText, window.getSize().x / 2.0f, 350);
                 window.draw(infoText);
