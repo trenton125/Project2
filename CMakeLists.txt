@@ -4,6 +4,7 @@ project(Project2)
 set(CMAKE_CXX_STANDARD 14)
 
 # SFML Configuration
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -23,6 +24,7 @@ add_executable(Project2
         GameDatabaseWindow.cpp
         main.cpp
 )
+
 target_link_libraries(Project2 PRIVATE
         sfml-graphics
         sfml-window

@@ -9,9 +9,9 @@
 using namespace std;
 using json = nlohmann::json;
 
-int main() {
 
-    auto start = chrono::system_clock::now();
+
+int main() {
 
     int count = 0;
 
@@ -33,18 +33,24 @@ int main() {
         splay_tree.insertSplay(game, rating, genre, platform);
         count++;
     }
+    for (int i = 0; i < 82466; i++) {
+        string game = to_string(i);
+        vector<string> genre = {"N/A", "N/A"};
+        string platform = "N/A";
+        double rating = 10;
+
+        splay_tree.insertSplay(game, rating, genre, platform);
+        count++;
+    }
 
     auto splay_end = chrono::high_resolution_clock::now();
+
     chrono::duration<double> splay_build_time = splay_end - splay_start;
 
     // Build Max Heap with timing
     auto heap_start = chrono::high_resolution_clock::now();
 
-    f.clear();
-    f.seekg(0);
-    json data2 = json::parse(f);
-
-    for (auto & it : data2["data"]){
+    for (auto & it : data["data"]){
         string game = it.at("game");
         vector<string> genre = it.at("genre");
         string platform = it.at("platform");
@@ -52,8 +58,17 @@ int main() {
 
         max_heap.insertHeap(game, 0, rating, genre, platform, "-1");
     }
+    for (int i = 0; i < 82466; i++) {
+        string game = to_string(i);
+        vector<string> genre = {"N/A", "N/A"};
+        string platform = "N/A";
+        double rating = 10;
+
+        max_heap.insertHeap(game, 0, rating, genre, platform, "-1");
+    }
 
     auto heap_end = chrono::high_resolution_clock::now();
+
     chrono::duration<double> heap_build_time = heap_end - heap_start;
 
     // Launch GUI with both data structures and timing info
@@ -61,10 +76,7 @@ int main() {
                              splay_build_time.count(), heap_build_time.count());
     window.run();
 
-    auto end = chrono::system_clock::now();
-    chrono::duration<double> build_time = end - start;
     cout << endl;
-    cout << "Build time: " << build_time.count() << " " << "seconds" << endl;
     cout << "Node Count: " << count << endl;
     cout << endl;
 
