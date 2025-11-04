@@ -1,5 +1,6 @@
 #include "heap.h"
 #include <iomanip>
+#include <functional>
 
 MaxHeap::~MaxHeap() {
     for (auto i : heap) {
@@ -37,6 +38,8 @@ void MaxHeap::insertHeap(const string &title, int year, double rating,
     heapifyUp(static_cast<int>(heap.size()) - 1);
 }
 
+
+
 bool MaxHeap::search(const string &title) const {
     for (const auto &g : heap) {
         if (g->title == title) {
@@ -54,14 +57,47 @@ bool MaxHeap::search(const string &title) const {
     cout << "Game not found.\n";
     return false;
 }
-Game* MaxHeap::searchGame(const string &title) {
-    for (auto &g : heap) {
+
+
+Game* MaxHeap::searchGame(const string &title) const {
+    MaxHeap heapCopy = *this;
+
+    std::function<Game*(int)> searchRecursive = [&](int index) -> Game* {
+        if (index >= static_cast<int>(heapCopy.heap.size()))
+            return nullptr;
+
+        Game* g = heapCopy.heap[index];
+        if (g->title < title)
+            return nullptr;
+
         if (g->title == title) {
+            cout << "Game found:\n";
+            cout << " Title: " << g->title << "\n";
+            cout << " Year: " << g->releaseYear << "\n";
+            cout << " Rating: " << g->rating << "\n";
+            cout << " Genres: ";
+            for (const auto &genre : g->genres) cout << genre << " ";
+            cout << "\n Platforms: " << g->platforms;
+            cout << "\n User Rating: " << g->userRating << "\n";
             return g;
         }
+
+        Game* leftResult = searchRecursive(heapCopy.leftChild(index));
+        if (leftResult) return leftResult;
+
+        Game* rightResult = searchRecursive(heapCopy.rightChild(index));
+        return rightResult;
+    };
+
+    Game* result = searchRecursive(0);
+    if (!result) {
+        cout << "Game not found.\n";
     }
-    return nullptr;
+
+    return result;
 }
+
+
 
 void MaxHeap::display() const {
     cout << std::left << setw(30) << "Title"

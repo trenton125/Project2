@@ -1,6 +1,5 @@
 #ifndef HEAP_H
 #define HEAP_H
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -41,14 +40,13 @@ private:
 public:
 
     MaxHeap() {}
-
     ~MaxHeap();
 
     void insertHeap(const string &title, int year, double rating,
                     const vector<string> &genres, const string &platforms, const string &userRating);
 
     bool search(const string &title) const;
-    Game* searchGame(const string &title);
+    Game* searchGame(const string &title) const;
     void display() const;
     Game* getMax() const;
 
