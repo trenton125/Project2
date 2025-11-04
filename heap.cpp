@@ -1,6 +1,7 @@
 #include "heap.h"
 #include <iomanip>
 #include <functional>
+#include <algorithm>
 
 MaxHeap::~MaxHeap() {
     for (auto i : heap) {
@@ -58,43 +59,39 @@ bool MaxHeap::search(const string &title) const {
     return false;
 }
 
+Game* MaxHeap::searchGame(const std::string &title) const {
+    if (heap.empty()) {
+        std::cout << "Heap is empty.\n";
+        return nullptr;
+    }
+    std::vector<Game*> temp = heap;
 
-Game* MaxHeap::searchGame(const string &title) const {
-    MaxHeap heapCopy = *this;
+    std::make_heap(temp.begin(), temp.end(), [](Game* a, Game* b) {
+        return a->userRating < b->userRating;
+    });
 
-    std::function<Game*(int)> searchRecursive = [&](int index) -> Game* {
-        if (index >= static_cast<int>(heapCopy.heap.size()))
-            return nullptr;
-
-        Game* g = heapCopy.heap[index];
-        if (g->title < title)
-            return nullptr;
+    while (!temp.empty()) {
+        std::pop_heap(temp.begin(), temp.end(), [](Game* a, Game* b) {
+            return a->userRating < b->userRating;
+        });
+        Game* g = temp.back();
+        temp.pop_back();
 
         if (g->title == title) {
-            cout << "Game found:\n";
-            cout << " Title: " << g->title << "\n";
-            cout << " Year: " << g->releaseYear << "\n";
-            cout << " Rating: " << g->rating << "\n";
-            cout << " Genres: ";
-            for (const auto &genre : g->genres) cout << genre << " ";
-            cout << "\n Platforms: " << g->platforms;
-            cout << "\n User Rating: " << g->userRating << "\n";
+            std::cout << "Game found:\n";
+            std::cout << " Title: " << g->title << "\n";
+            std::cout << " Year: " << g->releaseYear << "\n";
+            std::cout << " Rating: " << g->rating << "\n";
+            std::cout << " Genres: ";
+            for (const auto &genre : g->genres) std::cout << genre << " ";
+            std::cout << "\n Platforms: " << g->platforms;
+            std::cout << "\n User Rating: " << g->userRating << "\n";
             return g;
         }
-
-        Game* leftResult = searchRecursive(heapCopy.leftChild(index));
-        if (leftResult) return leftResult;
-
-        Game* rightResult = searchRecursive(heapCopy.rightChild(index));
-        return rightResult;
-    };
-
-    Game* result = searchRecursive(0);
-    if (!result) {
-        cout << "Game not found.\n";
     }
 
-    return result;
+    std::cout << "Game not found.\n";
+    return nullptr;
 }
 
 
