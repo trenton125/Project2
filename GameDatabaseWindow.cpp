@@ -83,7 +83,6 @@ void GameDatabaseWindow::run() {
             }
         }
 
-        // Clear window
         window.clear(sf::Color(40, 44, 52));
 
         // Render current screen
@@ -189,8 +188,15 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
                         statusText.setFillColor(sf::Color::Red);
                     }
                 } else {
-                    statusText.setString("Add rating only works with Splay Tree!");
-                    statusText.setFillColor(sf::Color(255, 165, 0));
+                    Game* game = maxHeap.searchGame(gameNameForRating);
+                    if (game) {
+                        game->userRating = ratingInput;
+                        statusText.setString("Rating added to Heap!");
+                        statusText.setFillColor(sf::Color::Green);
+                    } else {
+                        statusText.setString("Game not found!");
+                        statusText.setFillColor(sf::Color::Red);
+                    }
                 }
             }
             catch (const std::exception& e) {
@@ -212,7 +218,6 @@ void GameDatabaseWindow::handleScroll(float delta) {
 void GameDatabaseWindow::handleMouseClick(int x, int y) {
     switch (currentScreen) {
         case MAIN_MENU:
-            // Toggle switch click (moved position)
             if (x >= 650 && x <= 850 && y >= 160 && y <= 200) {
                 currentDataStructure = (currentDataStructure == USING_SPLAY) ? USING_HEAP : USING_SPLAY;
             }
@@ -241,8 +246,8 @@ void GameDatabaseWindow::handleMouseClick(int x, int y) {
             break;
 
         case ADD_RATING:
-            if (y >= 200 && y <= 230) activeField = 0;  // Game name
-            else if (y >= 260 && y <= 290) activeField = 1;  // Rating
+            if (y >= 200 && y <= 230) activeField = 0;
+            else if (y >= 260 && y <= 290) activeField = 1;
             else if (y >= 330 && y <= 380 && x >= 350 && x <= 650) {
                 handleKeyPress(sf::Keyboard::Return);
             }
@@ -291,7 +296,6 @@ void GameDatabaseWindow::renderMainMenu() {
     setText(subtitleText, window.getSize().x / 2.0f, 120);
     window.draw(subtitleText);
 
-    // Draw toggle switch - moved to avoid overlap
     drawToggleSwitch(650, 160);
 
     // Build time stats
@@ -313,7 +317,6 @@ void GameDatabaseWindow::renderMainMenu() {
     setText(timingText, window.getSize().x / 2.0f, 210);
     window.draw(timingText);
 
-    // Current data structure indicator
     sf::Text dsText;
     dsText.setFont(font);
     dsText.setCharacterSize(18);
@@ -327,7 +330,10 @@ void GameDatabaseWindow::renderMainMenu() {
     // Buttons
     drawButton("View Data Structure Info", 300, 300, 400, 50, sf::Color(33, 150, 243));
     drawButton("Search Game", 300, 370, 400, 50, sf::Color(255, 152, 0));
-    drawButton("Add User Rating (Splay Only)", 300, 440, 400, 50, sf::Color(76, 175, 80));
+
+    std::string ratingButtonText = (currentDataStructure == USING_SPLAY) ?
+        "Add User Rating (Splay)" : "Add User Rating (Heap)";
+    drawButton(ratingButtonText, 300, 440, 400, 50, sf::Color(76, 175, 80));
 
     // Instructions
     sf::Text infoText;
@@ -483,7 +489,9 @@ void GameDatabaseWindow::renderAddRating() {
     setText(titleText, window.getSize().x / 2.0f, 80);
     window.draw(titleText);
 
-    subtitleText.setString("(Only works with Splay Tree)");
+    std::string subtitleStr = (currentDataStructure == USING_SPLAY) ?
+        "(Adding rating to Splay Tree)" : "(Adding rating to Max Heap)";
+    subtitleText.setString(subtitleStr);
     setText(subtitleText, window.getSize().x / 2.0f, 130);
     window.draw(subtitleText);
 
@@ -513,10 +521,10 @@ void GameDatabaseWindow::drawToggleSwitch(float x, float y) {
     sf::RectangleShape activeHighlight(sf::Vector2f(100, 40));
     if (currentDataStructure == USING_SPLAY) {
         activeHighlight.setPosition(x, y);
-        activeHighlight.setFillColor(sf::Color(156, 39, 176)); // Purple for Splay
+        activeHighlight.setFillColor(sf::Color(156, 39, 176));
     } else {
         activeHighlight.setPosition(x + 100, y);
-        activeHighlight.setFillColor(sf::Color(33, 150, 243)); // Blue for Heap
+        activeHighlight.setFillColor(sf::Color(33, 150, 243));
     }
     window.draw(activeHighlight);
 
@@ -598,7 +606,7 @@ void GameDatabaseWindow::drawGameCard(Splay::Node* game, float x, float y, float
     titleText.setFont(font);
     titleText.setString(game->title);
     titleText.setCharacterSize(20);
-    titleText.setFillColor(sf::Color(255, 215, 0)); // Gold
+    titleText.setFillColor(sf::Color(255, 215, 0));
     titleText.setStyle(sf::Text::Bold);
     titleText.setPosition(x + 10, y + 10);
     window.draw(titleText);
@@ -646,7 +654,7 @@ void GameDatabaseWindow::drawGameCardHeap(const Game& game, float x, float y, fl
     sf::RectangleShape card(sf::Vector2f(width, 120));
     card.setPosition(x, y);
     card.setFillColor(sf::Color(60, 60, 70));
-    card.setOutlineColor(sf::Color(33, 150, 243)); // Blue for heap
+    card.setOutlineColor(sf::Color(33, 150, 243));
     card.setOutlineThickness(2);
     window.draw(card);
 
