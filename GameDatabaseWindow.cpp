@@ -85,7 +85,6 @@ void GameDatabaseWindow::run() {
 
         window.clear(sf::Color(40, 44, 52));
 
-        // Render current screen
         switch (currentScreen) {
             case MAIN_MENU:
                 renderMainMenu();
@@ -140,7 +139,6 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
                 if (currentDataStructure == USING_SPLAY) {
                     splaySearchResult = splayTree.splaySearch(searchInput);
 
-                    // Get the time that was already calculated in splaySearch
                     lastSearchTime = splayTree.getLastSearchTime();
 
                     if (splaySearchResult) {
@@ -164,6 +162,7 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
                     } else {
                         statusText.setString("Game not found in Heap!");
                         statusText.setFillColor(sf::Color::Red);
+                        heapSearchResult = nullptr;
                     }
                 }
             }
@@ -179,7 +178,7 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
             try {
                 if (currentDataStructure == USING_SPLAY) {
                     Splay::Node* game = splayTree.splaySearch(gameNameForRating);
-                    if (game) {
+                    if (game != nullptr) {
                         game->user_rating = ratingInput;
                         statusText.setString("Rating added to Splay Tree!");
                         statusText.setFillColor(sf::Color::Green);
@@ -189,10 +188,12 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
                     }
                 } else {
                     Game* game = maxHeap.searchGame(gameNameForRating);
-                    if (game) {
+                    if (game != nullptr) {
                         game->userRating = ratingInput;
                         statusText.setString("Rating added to Heap!");
                         statusText.setFillColor(sf::Color::Green);
+
+                        heapSearchResult = nullptr;
                     } else {
                         statusText.setString("Game not found!");
                         statusText.setFillColor(sf::Color::Red);
@@ -405,7 +406,7 @@ void GameDatabaseWindow::renderViewAllGames() {
 
         if (!maxHeap.empty()) {
             try {
-                infoText.setString("Heap has " + std::to_string(maxHeap.size()) + " games");
+
                 infoText.setFillColor(sf::Color::Yellow);
                 setText(infoText, window.getSize().x / 2.0f, 350);
                 window.draw(infoText);
@@ -448,20 +449,31 @@ void GameDatabaseWindow::renderSearchGame() {
         window.draw(timeText);
     }
     else if (currentDataStructure == USING_HEAP && heapSearchResult != nullptr) {
-        float cardY = 350;
-        drawGameCardHeap(*heapSearchResult, 100, cardY, 800);
+        try {
+            float cardY = 350;
 
-        // Display search time
-        sf::Text timeText;
-        timeText.setFont(font);
-        timeText.setCharacterSize(14);
-        timeText.setFillColor(sf::Color::Cyan);
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(6);
-        oss << "Search Time: " << lastSearchTime << " seconds";
-        timeText.setString(oss.str());
-        setText(timeText, window.getSize().x / 2.0f, 490);
-        window.draw(timeText);
+            Game tempGame = *heapSearchResult;
+            drawGameCardHeap(tempGame, 100, cardY, 800);
+
+            // Display search time
+            sf::Text timeText;
+            timeText.setFont(font);
+            timeText.setCharacterSize(14);
+            timeText.setFillColor(sf::Color::Cyan);
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(6);
+            oss << "Search Time: " << lastSearchTime << " seconds";
+            timeText.setString(oss.str());
+            setText(timeText, window.getSize().x / 2.0f, 490);
+            window.draw(timeText);
+        }
+        catch (const std::exception& e) {
+            heapSearchResult = nullptr;
+            statusText.setString("Error displaying result - please search again");
+            statusText.setFillColor(sf::Color::Red);
+            setText(statusText, window.getSize().x / 2.0f, 400);
+            window.draw(statusText);
+        }
     }
     else if (!statusText.getString().isEmpty()) {
         setText(statusText, window.getSize().x / 2.0f, 400);
