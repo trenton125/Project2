@@ -30,14 +30,14 @@ Splay::Node::Node(const string &title, double ign_rating, const vector<string> &
 
 void Splay::deleteSplay(const Node* root) {
 
-  if (empty == false) {
-    if (root != nullptr) {
-      deleteSplay(root->left);
-      deleteSplay(root->right);
-      delete root;
-    }
+  if (root != nullptr) {
+    deleteSplay(root->left);
+    deleteSplay(root->right);
+    delete root;
   }
-
+  else {
+    return;
+  }
 }
 
 Splay::~Splay() {
@@ -70,35 +70,80 @@ Splay::Node* Splay::splay(Node* root, const string& title) {
 
   // Zig or Zag?
 
-  if (root->right == nullptr && root->left == nullptr) {
+  if (root == nullptr || root->title == title) {
     return root;
   }
-  if (root->right != nullptr) {
-    if (title == root->right->title) {
-      root = leftRotation(root);
+  if (title < root->title) {
+    if (root->left == nullptr) {
       return root;
     }
-    if (root->right->left != nullptr) {
-      if (title == root->right->left->title) {
-        root = rightRotation(root);
-        root = leftRotation(root);
-        return root;
-      }
-    }
-  }
-  else if (root->left != nullptr) {
-    if (title == root->left->title) {
+    if (title < root->left->title) {
+      root->left->left = splay(root->left->left, title);
       root = rightRotation(root);
-      return root;
     }
-    if (root->left->right != nullptr) {
-      if (title == root->left->right->title) {
-        root = leftRotation(root);
-        root = rightRotation(root);
-        return root;
+
+    else if (title > root->left->title) {
+      root->left->right = splay(root->left->right, title);
+      if (root->left->right != nullptr) {
+        root->left = leftRotation(root->left);
       }
     }
+    if (root->left == nullptr) {
+      return root;
+    }
+    else {
+      return rightRotation(root);
+    }
   }
+
+  else {
+    if (root->right == nullptr) {
+      return root;
+    }
+    if (title > root->right->title) {
+      root->right->right = splay(root->right->right, title);
+      root = leftRotation(root);
+    }
+    else if (title < root->right->title) {
+      root->right->left = splay(root->right->left, title);
+      if (root->right->left != nullptr) {
+        root->right = rightRotation(root->right);
+      }
+    }
+    if (root->right == nullptr) {
+      return root;
+    }
+    else {
+      return leftRotation(root);
+    }
+  }
+
+  // if (root->right != nullptr) {
+  //   if (title == root->right->title) {
+  //     root = leftRotation(root);
+  //     return root;
+  //   }
+  //   if (root->right->left != nullptr) {
+  //     if (title == root->right->left->title) {
+  //       root = rightRotation(root);
+  //       root = leftRotation(root);
+  //       return root;
+  //     }
+  //   }
+  // }
+  // else if (root->left != nullptr) {
+  //   if (title == root->left->title) {
+  //     root = rightRotation(root);
+  //     return root;
+  //   }
+  //   if (root->left->right != nullptr) {
+  //     if (title == root->left->right->title) {
+  //       root = leftRotation(root);
+  //       root = rightRotation(root);
+  //       return root;
+  //     }
+  //   }
+  // }
 
   return root;
 
