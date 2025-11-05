@@ -53,11 +53,11 @@ class Splay {
 
     static Node* splay(Node* root, const string& title);
 
-    static Node* recursiveSplayInsert(Node* root, const string& title, double ign_rating, const vector<string>& genre, const string& platform);
+    static Node* SplayInsertActual(Node* root, const string& title, double ign_rating, const vector<string>& genre, const string& platform);
 
     void insertSplay(const string& title, double ign_rating, const vector<string>& genre, const string& platform);
 
-    static Node* splayRecursiveSearch(Node* root, Node* &found, const string& title);
+    static Node* splaySearchActual(Node* root, const string& title);
 
     Node* splaySearch(const string& title);
 
