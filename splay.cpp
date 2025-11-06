@@ -83,52 +83,75 @@ Splay::Node* Splay::splay(Node* root, const string& title) {
 
   //Modified code from AVL Tree Project but updated for splay
 
-  if (root == nullptr || root->title == title) {
+  if (root == nullptr) {
     return root;
   }
 
-  if (title > root->title) {
-    if (root->right == nullptr) {
-      return root;
-    }
-    if (title < root->right->title) {
-      root->right->left = splay(root->right->left, title);
-      if (root->right->left != nullptr) {
-        root->right = rightRotation(root->right);
-      }
-    }
-    else if (title > root->right->title) {
-      root->right->right = splay(root->right->right, title);
-      root = leftRotation(root);
-    }
-    if (root->right == nullptr) {
-      return root;
-    }
-    else {
-      return leftRotation(root);
-    }
+  else if (root->title == title) {
+    return root;
   }
 
   else {
-    if (root->left == nullptr) {
-      return root;
-    }
-    if (title < root->left->title) {
-      root->left->left = splay(root->left->left, title);
-      root = rightRotation(root);
-    }
+    if (title > root->title) {
+      if (root->right == nullptr) {
+        return root;
+      }
+      else {
 
-    else if (title > root->left->title) {
-      root->left->right = splay(root->left->right, title);
-      if (root->left->right != nullptr) {
-        root->left = leftRotation(root->left);
+        if (title < root->right->title) {
+          root->right->left = splay(root->right->left, title);
+
+          if (root->right->left != nullptr) {
+            root->right = rightRotation(root->right);
+          }
+
+        }
+
+        else if (title > root->right->title) {
+          root->right->right = splay(root->right->right, title);
+          root = leftRotation(root);
+        }
+
+        if (root->right == nullptr) {
+          return root;
+        }
+
+        else {
+          return leftRotation(root);
+        }
       }
     }
-    if (root->left == nullptr) {
-      return root;
-    }
+
     else {
-      return rightRotation(root);
+
+      if (root->left == nullptr) {
+        return root;
+      }
+
+      else {
+        if (title < root->left->title) {
+          root->left->left = splay(root->left->left, title);
+          root = rightRotation(root);
+        }
+
+        else if (title > root->left->title) {
+          root->left->right = splay(root->left->right, title);
+
+          if (root->left->right != nullptr) {
+            root->left = leftRotation(root->left);
+          }
+
+        }
+
+        if (root->left == nullptr) {
+          return root;
+        }
+
+        else {
+          return rightRotation(root);
+        }
+      }
+
     }
   }
 
@@ -159,6 +182,7 @@ Splay::Node *Splay::SplayInsertActual(Node *root, const string& title, double ig
     root->right = nullptr;
 
   }
+
   else {
 
     newGame->right = root;
@@ -182,6 +206,10 @@ void Splay::insertSplay(const string& title, double ign_rating, const vector<str
 
 Splay::Node *Splay::splaySearchActual(Node* root, const string& title) {
 
+  if (root->title == title) {
+    return root;
+  }
+
   root = splay(root, title);
   if (root != nullptr) {
     if (root->title == title) {
@@ -198,26 +226,20 @@ Splay::Node *Splay::splaySearchActual(Node* root, const string& title) {
 Splay::Node *Splay::splaySearch(const string& title) {
 
   //Start Clock
+
   auto start = chrono::high_resolution_clock::now();
 
-  // Update the root after splaying
-  root = splay(root, title);
-
-  //End Clock IMMEDIATELY after splay
-  auto end = chrono::high_resolution_clock::now();
-
-  // Check if we found it
-  Node* found = nullptr;
-  if (root != nullptr && root->title == title) {
-    found = root;
+  Node* found = splaySearchActual(root, title);
+  if (found != nullptr) {
+    root = found;
   }
+
+  //End Clock
+
+  auto end = chrono::high_resolution_clock::now();
 
   chrono::duration<double> elapsed_time = end - start;
   lastSearchTime = elapsed_time.count();
-
-  // Debug output to console
-  cout << "DEBUG: Search time for '" << title << "': " << lastSearchTime << " seconds" << endl;
-
   splayPrintNode(found, elapsed_time);
   return found;
 

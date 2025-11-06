@@ -43,7 +43,7 @@ class Splay {
 
     Splay();
 
-    void deleteSplay(const Node* root);
+    static void deleteSplay(const Node* root);
 
     ~Splay();
 
