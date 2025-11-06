@@ -198,17 +198,26 @@ Splay::Node *Splay::splaySearchActual(Node* root, const string& title) {
 Splay::Node *Splay::splaySearch(const string& title) {
 
   //Start Clock
-
   auto start = chrono::high_resolution_clock::now();
 
-  Node* found = splaySearchActual(root, title);
+  // Update the root after splaying
+  root = splay(root, title);
 
-  //End Clock
-
+  //End Clock IMMEDIATELY after splay
   auto end = chrono::high_resolution_clock::now();
+
+  // Check if we found it
+  Node* found = nullptr;
+  if (root != nullptr && root->title == title) {
+    found = root;
+  }
 
   chrono::duration<double> elapsed_time = end - start;
   lastSearchTime = elapsed_time.count();
+
+  // Debug output to console
+  cout << "DEBUG: Search time for '" << title << "': " << lastSearchTime << " seconds" << endl;
+
   splayPrintNode(found, elapsed_time);
   return found;
 

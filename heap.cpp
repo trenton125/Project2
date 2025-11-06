@@ -1,7 +1,5 @@
 #include "heap.h"
 #include <iomanip>
-#include <functional>
-#include <algorithm>
 
 MaxHeap::~MaxHeap() {
     for (auto i : heap) {
@@ -39,8 +37,6 @@ void MaxHeap::insertHeap(const string &title, int year, double rating,
     heapifyUp(static_cast<int>(heap.size()) - 1);
 }
 
-
-
 bool MaxHeap::search(const string &title) const {
     for (const auto &g : heap) {
         if (g->title == title) {
@@ -60,23 +56,7 @@ bool MaxHeap::search(const string &title) const {
 }
 
 Game* MaxHeap::searchGame(const std::string &title) const {
-    if (heap.empty()) {
-        std::cout << "Heap is empty.\n";
-        return nullptr;
-    }
-    std::vector<Game*> temp = heap;
-
-    std::make_heap(temp.begin(), temp.end(), [](Game* a, Game* b) {
-        return a->userRating < b->userRating;
-    });
-
-    while (!temp.empty()) {
-        std::pop_heap(temp.begin(), temp.end(), [](Game* a, Game* b) {
-            return a->userRating < b->userRating;
-        });
-        Game* g = temp.back();
-        temp.pop_back();
-
+    for (auto &g : heap) {
         if (g->title == title) {
             std::cout << "Game found:\n";
             std::cout << " Title: " << g->title << "\n";
@@ -89,12 +69,9 @@ Game* MaxHeap::searchGame(const std::string &title) const {
             return g;
         }
     }
-
     std::cout << "Game not found.\n";
     return nullptr;
 }
-
-
 
 void MaxHeap::display() const {
     cout << std::left << setw(30) << "Title"

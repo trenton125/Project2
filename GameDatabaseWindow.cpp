@@ -137,9 +137,11 @@ void GameDatabaseWindow::handleKeyPress(sf::Keyboard::Key key) {
         if (currentScreen == SEARCH_GAME && !searchInput.empty()) {
             try {
                 if (currentDataStructure == USING_SPLAY) {
+                    auto start = std::chrono::high_resolution_clock::now();
                     splaySearchResult = splayTree.splaySearch(searchInput);
-
-                    lastSearchTime = splayTree.getLastSearchTime();
+                    auto end = std::chrono::high_resolution_clock::now();
+                    std::chrono::duration<double> elapsed = end - start;
+                    lastSearchTime = elapsed.count();
 
                     if (splaySearchResult) {
                         statusText.setString("Found in Splay Tree!");
@@ -403,15 +405,6 @@ void GameDatabaseWindow::renderViewAllGames() {
         infoText.setString("Advantages: Fast access to max element O(1)");
         setText(infoText, window.getSize().x / 2.0f, 300);
         window.draw(infoText);
-
-        if (!maxHeap.empty()) {
-            try {
-
-                infoText.setFillColor(sf::Color::Yellow);
-                setText(infoText, window.getSize().x / 2.0f, 350);
-                window.draw(infoText);
-            } catch (...) {}
-        }
     }
 
     drawButton("Back to Menu", 350, 600, 300, 50, sf::Color(100, 100, 100));
@@ -442,7 +435,7 @@ void GameDatabaseWindow::renderSearchGame() {
         timeText.setCharacterSize(14);
         timeText.setFillColor(sf::Color::Cyan);
         std::ostringstream oss;
-        oss << std::fixed << std::setprecision(6);
+        oss << std::fixed << std::setprecision(9);
         oss << "Search Time: " << lastSearchTime << " seconds";
         timeText.setString(oss.str());
         setText(timeText, window.getSize().x / 2.0f, 490);
