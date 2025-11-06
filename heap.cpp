@@ -1,6 +1,6 @@
 #include "heap.h"
 #include <iomanip>
-
+#include <algorithm>
 MaxHeap::~MaxHeap() {
     for (auto i : heap) {
         delete i;
@@ -54,9 +54,24 @@ bool MaxHeap::search(const string &title) const {
     cout << "Game not found.\n";
     return false;
 }
-
 Game* MaxHeap::searchGame(const std::string &title) const {
-    for (auto &g : heap) {
+    if (heap.empty()) {
+        std::cout << "Heap is empty.\n";
+        return nullptr;
+    }
+    std::vector<Game*> temp = heap;
+
+    std::make_heap(temp.begin(), temp.end(), [](Game *a, Game* b) {
+        return a->userRating < b->userRating;
+    });
+
+    while (!temp.empty()) {
+        std::pop_heap(temp.begin(), temp.end(), [](Game* a, Game* b) {
+            return a->userRating < b->userRating;
+        });
+        Game* g = temp.back();
+        temp.pop_back();
+
         if (g->title == title) {
             std::cout << "Game found:\n";
             std::cout << " Title: " << g->title << "\n";
@@ -69,10 +84,10 @@ Game* MaxHeap::searchGame(const std::string &title) const {
             return g;
         }
     }
+
     std::cout << "Game not found.\n";
     return nullptr;
 }
-
 void MaxHeap::display() const {
     cout << std::left << setw(30) << "Title"
          << setw(8) << "Year"
